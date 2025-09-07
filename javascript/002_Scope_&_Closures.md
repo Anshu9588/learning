@@ -1,3 +1,10 @@
+# Topic : Scope & Closures\*\*
+
+- Function scope, block scope, lexical scope
+- Create closure examples: counter, private variables
+
+---
+
 ### High Importance
 
 #### 1\. Define function scope and block scope in JavaScript. Explain how `var`, `let`, and `const` differ in scoping.

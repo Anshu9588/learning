@@ -1,3 +1,8 @@
+# - **Promises**
+
+- `then`, `catch`, chaining, error propagation
+- Hands-on: Wrap callback-style functions in promises
+
 ### \#\# Part 1: High-Importance Questions 🌟
 
 ---

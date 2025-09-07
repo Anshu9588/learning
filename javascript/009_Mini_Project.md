@@ -1,6 +1,7 @@
-Here is a mini project to build a data-transformation utility using JavaScript's map, filter, arrow functions, and destructuring. This utility processes an array of user objects to filter, transform, and summarize user data.
 
-***
+# - **Mini Project**
+  - Build a data-transformation utility using map/filter, arrow functions, and destructuring
+
 
 ## Data-Transformation Utility: User Data Processor
 

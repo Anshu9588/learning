@@ -1,3 +1,8 @@
+# Topic:- Hoisting & Execution Context**
+  - Understand creation vs. execution phases
+  - Experiment with function vs. variable hoisting
+---
+
 ### High Importance
 
 #### 1\. What are the two phases of JavaScript execution context and what happens in each (creation vs. execution)?

@@ -1,5 +1,6 @@
-Of course. These advanced functional patterns are very popular topics in technical interviews as they demonstrate a deep understanding of JavaScript's capabilities. Let's break them down.
-
+# - **Function Patterns**
+  - Currying, partial application, composition
+  - Hands-on: Compose small math operations
 ---
 
 ### High Importance

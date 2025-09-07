@@ -1,5 +1,6 @@
-Of course. Here are the answers to the most common interview questions on modern ES6+ JavaScript syntax.
-
+# - **ES6+ Syntax**
+  - Destructuring, spread/rest, template literals, default parameters
+  - Practice refactoring legacy code to ES6
 ---
 
 ### \#\# High Importance

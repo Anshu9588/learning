@@ -1,6 +1,8 @@
-Of course. Let's tackle the very heart of JavaScript's asynchronous model: the **Event Loop**. Understanding this topic is non-negotiable for any serious JavaScript developer.
 
-We'll use our established approach, starting with the most critical **High-Importance** questions to build a solid foundation.
+# - **Callbacks & Event Loop**
+  - Call stack, task queue, microtasks vs. macrotasks
+  - Write examples using `setTimeout`, `Promise.resolve().then()`
+
 
 ### \#\# Part 1: High-Importance Questions 🌟
 

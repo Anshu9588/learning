@@ -1,4 +1,7 @@
-Excellent\! Let's dive deep into all these questions to get you fully prepared. As you suggested, we'll tackle this in parts, starting with the most critical **High-Importance** questions. Mastering these will cover about 80% of what you'll likely be asked about `async/await`.
+# - **async/await**
+  - Syntax, error handling with `try/catch`
+  - Refactor promise chains to `async/await`
+
 
 ### \#\# Part 1: High-Importance Questions 🌟
 

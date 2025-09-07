@@ -1,5 +1,6 @@
-Of course. Arrow functions and the `this` keyword are a critical area in JavaScript interviews, as they highlight the evolution of the language and a developer's understanding of scope. Let's break down these questions.
-
+# - **Arrow Functions & `this` Binding**
+  - Lexical `this` vs. dynamic context
+  - Convert traditional functions to arrow functions in sample code
 -----
 
 ### High Importance

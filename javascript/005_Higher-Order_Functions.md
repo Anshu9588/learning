@@ -1,3 +1,7 @@
+# Topic - **Higher-Order Functions**
+  - Map, filter, reduce
+  - Write utility functions (e.g., custom `map`, `filter`)
+
 ### High Importance
 
 #### 1\. What is a higher-order function in JavaScript? Give examples.

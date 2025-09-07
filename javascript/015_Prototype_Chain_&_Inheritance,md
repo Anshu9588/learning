@@ -1,0 +1,533 @@
+# - **Prototype Chain & Inheritance**
+
+- `__proto__`, `Object.create`, constructor functions
+- Build a simple class hierarchy (e.g., Animal → Dog → Labrador)
+
+### \#\# Part 1: High-Importance Questions 🌟
+
+---
+
+#### **1. What is the prototype chain in JavaScript? How does property lookup work along the chain?**
+
+**Interview Answer:**
+"The **prototype chain** is the mechanism JavaScript uses for inheritance. Every object in JavaScript has a hidden internal property, which we can access via `__proto__`, that links to another object called its **prototype**. That prototype object has its own prototype, and so on, creating a 'chain' of linked objects. This chain ends when we reach an object whose prototype is `null`.
+
+**Property lookup** works like this: when you try to access a property on an object, JavaScript first checks if the property exists directly on that object itself.
+
+- If it finds the property, it returns the value.
+- If it doesn't, it follows the `__proto__` link to the object's prototype and checks for the property there.
+- It continues this process, walking up the prototype chain, until it either finds the property or reaches the end of the chain (`null`). If it reaches the end without finding the property, it returns `undefined`."
+
+---
+
+#### **2. Explain the difference between `__proto__` and `prototype`. When would you use each?**
+
+**Interview Answer:**
+"This is a crucial distinction.
+
+- **`prototype`** is a property that exists only on **constructor functions**. It's an object that will be assigned as the prototype for all instances created by that constructor. You use the `prototype` property to define methods and properties that you want all instances to share. This is the blueprint.
+
+- **`__proto__`** (dunder proto) is an internal property that exists on **every object instance**. It's a direct link to the object's prototype in the chain. It points to the constructor's `prototype` object from which it was created.
+
+In summary:
+
+- You use **`Constructor.prototype`** to define inheritable members for a 'class' of objects.
+- You use **`instance.__proto__`** to look up the prototype chain of a specific object. However, you should generally avoid using `__proto__` directly in production code. The modern way to get an object's prototype is with `Object.getPrototypeOf()`."
+
+**Code Example:**
+
+```javascript
+// 'prototype' is a property of the constructor function
+function Dog(name) {
+  this.name = name;
+}
+Dog.prototype.bark = function () {
+  console.log("Woof!");
+};
+
+// 'buddy' is an instance
+const buddy = new Dog("Buddy");
+
+// '__proto__' is a property of the instance, linking it to the constructor's prototype
+console.log(buddy.__proto__ === Dog.prototype); // true
+
+buddy.bark(); // Accesses bark via the prototype chain
+```
+
+---
+
+#### **3. How do constructor functions work in JavaScript? What happens when you use the `new` keyword?**
+
+**Interview Answer:**
+"A **constructor function** is a regular JavaScript function used with the `new` keyword to create and initialize objects. By convention, their names start with a capital letter.
+
+The **`new`** keyword automates four key steps:
+
+1.  **Creation**: It creates a new, empty plain JavaScript object.
+2.  **Linking**: It sets the `__proto__` of this new object to point to the constructor function's `prototype` object. This establishes the prototype chain for inheritance.
+3.  **Binding `this`**: It calls the constructor function with the `this` keyword bound to the newly created object. This allows you to add properties to the object (e.g., `this.name = name;`).
+4.  **Returning**: If the constructor function does not explicitly return an object, `new` automatically returns the newly created object (`this`)."
+
+**Code Example:**
+
+```javascript
+function Car(make, model) {
+  // `this` is the new object created by `new`
+  this.make = make;
+  this.model = model;
+}
+Car.prototype.drive = function () {
+  console.log("Vroom!");
+};
+
+// The 'new' keyword triggers the 4 steps
+const myCar = new Car("Toyota", "Camry");
+
+console.log(myCar.make); // 'Toyota'
+myCar.drive(); // 'Vroom!'
+```
+
+---
+
+#### **4. What is prototypal inheritance? How does it differ from classical inheritance?**
+
+**Interview Answer:**
+"**Prototypal inheritance** is a core feature of JavaScript. In this model, objects can inherit properties and methods directly from other objects. There are no rigid 'classes' in the traditional sense; instead, you have objects that serve as prototypes for other objects. When you create a new object, you can specify an existing object as its prototype, and the new object will have access to all of the prototype's properties.
+
+This differs significantly from **classical inheritance**, which is found in languages like Java or C++.
+
+- In **classical inheritance**, you define **classes** which act as blueprints for objects. Inheritance happens between classes, creating a rigid hierarchy. An instance is created from a class and cannot change its structure later.
+- In **prototypal inheritance**, the relationship is between **objects**. It's more flexible and dynamic. An object can be created from another object, and you can even change an object's prototype at runtime."
+
+---
+
+#### **5. How do you create objects using `Object.create()`? How does it differ from constructor functions?**
+
+**Interview Answer:**
+"`Object.create()` is a method that creates a new object and allows you to explicitly specify which object should be its prototype.
+
+It differs from constructor functions in a few key ways:
+
+- **Prototype Specification**: `Object.create(proto)` gives you direct, one-step control over an object's prototype. With a constructor, the prototype is implicitly set to `Constructor.prototype`.
+- **No Constructor Function**: `Object.create()` doesn't invoke a constructor function. It's a more direct way of creating an object with a specific prototype link. Any initialization has to be done separately.
+- **Use Case**: It's ideal for creating simple objects that need to inherit from a specific utility object, or when you want to implement inheritance without the ceremony of constructor functions. It's the purest form of prototypal inheritance."
+
+**Code Example:**
+
+```javascript
+// A simple object to act as a prototype
+const animalPrototype = {
+  makeSound: function () {
+    console.log("Some generic sound");
+  },
+};
+
+// Create a new object 'dog' with 'animalPrototype' as its prototype
+const dog = Object.create(animalPrototype);
+
+dog.makeSound(); // 'Some generic sound'
+console.log(Object.getPrototypeOf(dog) === animalPrototype); // true
+```
+
+---
+
+#### **6. Build a simple class hierarchy using constructor functions: Animal → Dog → Labrador. Show inheritance implementation.**
+
+**Interview Answer:**
+"Certainly. Here is a three-level inheritance chain using constructor functions, `Object.create()`, and `Function.prototype.call` to chain the constructors.
+
+The key steps for each level of inheritance are:
+
+1.  Call the parent constructor inside the child constructor using `.call(this, ...)` to inherit instance properties.
+2.  Set the child's prototype to a new object created from the parent's prototype using `Object.create(Parent.prototype)`. This links the prototype chain.
+3.  Reset the `constructor` property on the child's prototype to point back to the child constructor itself. This is important for `instanceof` checks and general correctness."
+
+**Code Implementation:**
+
+```javascript
+// Level 1: Animal (Base 'class')
+function Animal(name) {
+  this.name = name;
+}
+Animal.prototype.eat = function () {
+  console.log(`${this.name} is eating.`);
+};
+
+// Level 2: Dog (Inherits from Animal)
+function Dog(name, breed) {
+  // 1. Call parent constructor
+  Animal.call(this, name);
+  this.breed = breed;
+}
+// 2. Set prototype chain
+Dog.prototype = Object.create(Animal.prototype);
+// 3. Reset constructor property
+Dog.prototype.constructor = Dog;
+
+Dog.prototype.bark = function () {
+  console.log("Woof!");
+};
+
+// Level 3: Labrador (Inherits from Dog)
+function Labrador(name, color) {
+  Dog.call(this, name, "Labrador");
+  this.color = color;
+}
+Labrador.prototype = Object.create(Dog.prototype);
+Labrador.prototype.constructor = Labrador;
+
+Labrador.prototype.swim = function () {
+  console.log(`${this.name} is swimming.`);
+};
+
+// --- Usage ---
+const buddy = new Labrador("Buddy", "Golden");
+buddy.eat(); // Inherited from Animal
+buddy.bark(); // Inherited from Dog
+buddy.swim(); // Own method
+
+console.log(buddy instanceof Labrador); // true
+console.log(buddy instanceof Dog); // true
+console.log(buddy instanceof Animal); // true
+```
+
+---
+
+#### **7. How do you add methods to a constructor function's prototype? Why is this preferred over adding methods directly in the constructor?**
+
+**Interview Answer:**
+"You add methods to a constructor's prototype by directly assigning them to the `prototype` property, like `MyConstructor.prototype.myMethod = function() { ... };`.
+
+This is the preferred approach for two main reasons:
+
+1.  **Memory Efficiency**: When you add a method to the prototype, that single function is shared among **all** instances created by that constructor. If you were to add the method directly inside the constructor (e.g., `this.myMethod = function() { ... }`), a new, separate function would be created in memory for **every single instance**. For thousands of objects, this is incredibly wasteful.
+
+2.  **Dynamic Updates**: You can modify a constructor's prototype at any time, and all existing instances will immediately have access to the new methods or properties through the prototype chain. This isn't possible if the methods are defined directly on the instances."
+
+**Code Example:**
+
+```javascript
+function Player(name) {
+  this.name = name;
+
+  // 👎 BAD: Inefficient. Creates a new function for every player.
+  // this.shoot = function() { console.log('Shooting!'); };
+}
+
+// 👍 GOOD: Efficient. All player instances share this one function.
+Player.prototype.shoot = function () {
+  console.log("Shooting!");
+};
+
+const player1 = new Player("Alice");
+const player2 = new Player("Bob");
+
+player1.shoot();
+player2.shoot();
+
+console.log(player1.shoot === player2.shoot); // true (they share the same function)
+```
+
+---
+
+### \#\# Part 2: Medium-Importance Questions 🤔
+
+These questions test your practical, day-to-day knowledge of how to work with and inspect the prototype chain.
+
+---
+
+#### **8. Explain how `instanceof` works. What does it check along the prototype chain?**
+
+**Interview Answer:**
+"The **`instanceof`** operator checks if a constructor's `prototype` object appears anywhere in an object's prototype chain. It answers the question: 'Was this object created by this constructor, or a constructor that inherits from it?'
+
+When you write `object instanceof Constructor`, JavaScript starts at `object` and walks up its prototype chain. In each step, it checks if the current prototype object is strictly equal (`===`) to `Constructor.prototype`. If it finds a match, it returns `true`. If it reaches the end of the chain without finding a match, it returns `false`."
+
+**Code Example:**
+
+```javascript
+function Animal() {}
+function Dog() {}
+Dog.prototype = Object.create(Animal.prototype);
+Dog.prototype.constructor = Dog;
+
+const buddy = new Dog();
+
+// buddy's prototype is Dog.prototype
+// Dog.prototype's prototype is Animal.prototype
+// Animal.prototype's prototype is Object.prototype
+
+console.log(buddy instanceof Dog); // true (buddy.__proto__ === Dog.prototype)
+console.log(buddy instanceof Animal); // true (buddy.__proto__.__proto__ === Animal.prototype)
+console.log(buddy instanceof Object); // true (found at the end of the chain)
+console.log(buddy instanceof Array); // false (Array.prototype is not in the chain)
+```
+
+---
+
+#### **9. What is the difference between own properties and inherited properties? How do you check for each?**
+
+**Interview Answer:**
+"**Own properties** are properties that exist directly on an object instance itself. They are defined in the constructor (using `this`) or added to the object later.
+
+**Inherited properties** are properties that are not on the object itself but are found somewhere along its prototype chain.
+
+You can check for them using these methods:
+
+- **`Object.prototype.hasOwnProperty()`**: This is the primary way to check for an **own property**. It returns `true` only if the property exists directly on the object and not on its prototype.
+- **The `in` operator**: This checks for **both own and inherited properties**. It returns `true` if the property can be found anywhere on the object or its prototype chain."
+
+**Code Example:**
+
+```javascript
+function Car(make) {
+  this.make = make; // own property
+}
+Car.prototype.wheels = 4; // inherited property
+
+const myCar = new Car("Honda");
+
+// Checking for 'make'
+console.log(myCar.hasOwnProperty("make")); // true (it's an own property)
+console.log("make" in myCar); // true (it's found on the object)
+
+// Checking for 'wheels'
+console.log(myCar.hasOwnProperty("wheels")); // false (it's not an own property)
+console.log("wheels" in myCar); // true (it's found on the prototype)
+```
+
+---
+
+#### **10. How does method overriding work in prototypal inheritance? Provide a code example.**
+
+**Interview Answer:**
+"**Method overriding** occurs when a child object defines a method with the same name as a method in its parent's prototype.
+
+Due to how property lookup works, when you call the method on a child instance, JavaScript finds the method on the child's prototype _first_ and executes it. It never continues up the chain to find the parent's version. This allows child objects to provide a more specific implementation of a method while still inheriting other methods."
+
+**Code Example:**
+
+```javascript
+function Animal() {}
+Animal.prototype.speak = function () {
+  console.log("Generic animal sound");
+};
+
+function Cat() {}
+Cat.prototype = Object.create(Animal.prototype);
+Cat.prototype.constructor = Cat;
+
+// Override the 'speak' method for Cat
+Cat.prototype.speak = function () {
+  console.log("Meow");
+};
+
+const myCat = new Cat();
+const genericAnimal = new Animal();
+
+myCat.speak(); // 'Meow' (The overridden method is found and called first)
+genericAnimal.speak(); // 'Generic animal sound'
+```
+
+---
+
+#### **11. What is `Object.getPrototypeOf()` and `Object.setPrototypeOf()`? When would you use them?**
+
+**Interview Answer:**
+"These are modern, standard methods for interacting with an object's prototype.
+
+- **`Object.getPrototypeOf(obj)`**: This is the standard and recommended way to get the prototype of an object. It's a direct replacement for accessing the non-standard `__proto__` property. You'd use this anytime you need to inspect an object's prototype chain.
+
+- **`Object.setPrototypeOf(obj, prototype)`**: This method sets the prototype of a specified object to another object or `null`. While it's available, modifying an object's prototype after it has been created is a very slow operation and can kill performance in JavaScript engines. It should be used with extreme caution. The best practice is to set the prototype when the object is created, using `Object.create()`."
+
+---
+
+#### **12. How do ES6 classes relate to prototypes under the hood? Are classes syntactic sugar over prototypes?**
+
+**Interview Answer:**
+"Yes, ES6 classes are primarily **syntactic sugar** over JavaScript's existing prototypal inheritance model. They provide a much cleaner and more familiar syntax for developers coming from classical languages, but they don't introduce a new inheritance model.
+
+Under the hood:
+
+- A `class` declaration creates a constructor function.
+- Methods defined within the class (like `myMethod() {}`) are added to the constructor's `prototype`.
+- The `constructor` method is the actual constructor function body.
+- `extends` and `super` keywords handle the details of setting up the prototype chain (`Object.create()`) and calling the parent constructor (`.call()`), which we used to do manually."
+
+**Code Example:**
+
+```javascript
+// ES6 Class syntax
+class Dog {
+  constructor(name) {
+    this.name = name;
+  }
+  bark() {
+    console.log("Woof!");
+  }
+}
+
+const milo = new Dog("Milo");
+
+// This is roughly what it looks like under the hood:
+function Dog_prototype(name) {
+  this.name = name;
+}
+Dog_prototype.prototype.bark = function () {
+  console.log("Woof!");
+};
+
+const milo_proto = new Dog_prototype("Milo");
+
+console.log(typeof Dog); // 'function'
+console.log(milo.__proto__ === Dog.prototype); // true
+```
+
+---
+
+#### **13. What happens when you modify a constructor's prototype after instances are created?**
+
+**Interview Answer:**
+"Because the prototype chain is looked up _live_ at runtime, any changes made to a constructor's `prototype` object are immediately reflected on all existing instances that inherit from it.
+
+If you add a new method to the prototype, all existing objects created from that constructor will instantly have access to that new method. This is a powerful feature of JavaScript's dynamic nature."
+
+**Code Example:**
+
+```javascript
+function User(name) {
+  this.name = name;
+}
+
+const user1 = new User("Alice");
+
+// At this point, user1 does not have a 'greet' method.
+// console.log(user1.greet()); // This would throw an error.
+
+// Now, let's modify the prototype AFTER the instance was created.
+User.prototype.greet = function () {
+  console.log(`Hello, my name is ${this.name}`);
+};
+
+// Now, the method is available on the existing instance.
+user1.greet(); // "Hello, my name is Alice"
+```
+
+---
+
+### \#\# Part 3: Low-Importance Questions 📚
+
+These questions cover more niche topics. Answering them correctly shows a very deep and comprehensive understanding of JavaScript's object model.
+
+---
+
+#### **16. How does the `hasOwnProperty()` method work? Why is it important when iterating over object properties?**
+
+**Interview Answer:**
+"The **`hasOwnProperty()`** method returns a boolean indicating whether an object has a specific property as one of its **own properties**—that is, a property defined directly on the object itself and not inherited from its prototype chain.
+
+It's critically important when using a `for...in` loop to iterate over an object's properties. The `for...in` loop iterates over both own and inherited properties, which can lead to unexpected behavior if you only want to work with the properties unique to that instance. You should always include an `if (obj.hasOwnProperty(key))` check inside a `for...in` loop to ensure you're only processing the object's own properties."
+
+**Code Example:**
+
+```javascript
+function Person(name) {
+  this.name = name; // Own property
+}
+Person.prototype.species = "Human"; // Inherited property
+
+const alice = new Person("Alice");
+
+for (const key in alice) {
+  // Without the check, it would log 'name' AND 'species'.
+  if (alice.hasOwnProperty(key)) {
+    console.log(`Own property: ${key}`); // Logs "Own property: name"
+  }
+}
+```
+
+---
+
+#### **18. How do you create objects with no prototype (`null` prototype)?**
+
+**Interview Answer:**
+"You can create an object that doesn't inherit from anything—not even `Object.prototype`—by using **`Object.create(null)`**.
+
+This creates a truly 'empty' or 'pure' dictionary-like object. It won't have any of the standard built-in object methods like `toString()`, `hasOwnProperty()`, etc. This can be advantageous for creating hashmaps or dictionaries where you want to avoid any potential property name collisions with built-in methods."
+
+**Code Example:**
+
+```javascript
+const pureMap = Object.create(null);
+
+pureMap.name = "John";
+console.log(pureMap.name); // 'John'
+
+// This would throw an error because .toString() is not inherited.
+// console.log(pureMap.toString()); // TypeError: pureMap.toString is not a function
+```
+
+---
+
+#### **19. Explain the difference between `Object.create()`, `new Object()`, and `{}` for object creation.**
+
+**Interview Answer:**
+
+- **`{}` (Object Literal)**: This is the most common and simplest way to create a plain object. The created object's prototype is automatically set to `Object.prototype`. It's equivalent to `new Object()`.
+
+- **`new Object()`**: This uses the `Object` constructor to create a plain object. Functionally, it's the same as using the object literal syntax `{}`. The literal form is almost always preferred for its conciseness.
+
+- **`Object.create(proto)`**: This is the most powerful and explicit method. It creates a new object and allows you to **specify its prototype directly**. If you pass `Object.prototype`, the result is the same as `{}`, but you can pass any other object to set up an inheritance chain, or `null` to create an object with no prototype.
+
+---
+
+#### **21. What is the `constructor` property? How can it be useful and what are its pitfalls?**
+
+**Interview Answer:**
+"The **`constructor`** property is a reference on an instance that points back to the constructor function that created it. This reference isn't on the instance itself but is inherited from its prototype. For example, `myDog.constructor` points to the `Dog` function.
+
+**Usefulness**: It can be used to create a new object of the same type as an existing one without knowing its specific constructor, for example, `new myDog.constructor()`.
+
+**Pitfall**: The `constructor` property is not read-only and can be unreliable. When we set up inheritance manually (e.g., `Dog.prototype = Object.create(Animal.prototype)`), we overwrite the original prototype, which also overwrites the `constructor` property. It's considered a best practice to manually reset it (`Dog.prototype.constructor = Dog`) to maintain consistency, but because it can be changed, it shouldn't be relied upon in critical logic."
+
+---
+
+#### **25. How do you implement private methods and properties using constructor functions and closures?**
+
+**Interview Answer:**
+"JavaScript doesn't have true private properties in the pre-class era, but you can achieve privacy using **closures**.
+
+Inside a constructor function, you can declare variables and functions using `var` or `let` instead of attaching them to `this`. Because of closure, these variables are only accessible to the code _within_ that constructor function, including any methods you define and attach to `this`. They are effectively private."
+
+**Code Example:**
+
+```javascript
+function BankAccount(initialBalance) {
+  // 'balance' is a "private" variable. It's not attached to 'this'.
+  let balance = initialBalance;
+
+  // 'logTransaction' is a "private" method.
+  function logTransaction(amount) {
+    console.log(`Transaction logged: ${amount}`);
+  }
+
+  // These are "public" methods that can access the private members.
+  this.deposit = function (amount) {
+    balance += amount;
+    logTransaction(amount);
+  };
+
+  this.getBalance = function () {
+    return balance;
+  };
+}
+
+const myAccount = new BankAccount(100);
+
+myAccount.deposit(50);
+console.log(myAccount.getBalance()); // 150
+
+// You cannot access 'balance' or 'logTransaction' directly from the outside.
+console.log(myAccount.balance); // undefined
+// myAccount.logTransaction(10); // TypeError
+```
